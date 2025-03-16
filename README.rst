@@ -1,22 +1,18 @@
 ===================
 3D Model Repository
 ===================
-This project is a repository for 3D models, and their metadata, for use by the OpenStreetMap community for improving the quality of 3D rendering of maps, developed as part of Google Summer of Code 2017 by Pedro Amaro, with Jan Marsch and Tobias Knerr as mentors.
+This project is a repository for 3D models, and their metadata, for use by the OpenStreetMap community for improving the quality of 3D rendering of maps.
 
 Development Server Instructions
 ===============================
-Firstly, install ``python3`` and ``pip3``. You also need the ``virtualenv`` python package, you can install it with ``sudo pip3 install virtualenv``.
-Then, to get a development server running from this repository:
+The project requires Docker to be installed on the system. The following steps will guide you through setting up the development server.
 
-1. Clone the repository, ``git clone https://gitlab.com/n42k/3dmr.git``.
+1. Clone the repository, ``git clone https://gitlab.com/AyushDharDubey/3dmr.git``.
 2. Move inside the directory that was created, ``cd 3dmr``.
-3. Set up the virtualenv, ``virtualenv .env``.
-4. Activate the virtualenv, ``source .env/bin/activate``.
-5. Install the required packages, ``pip3 install -r requirements.txt``.
-6. Set up the PostgreSQL database, configure it in ``modelrepository/settings.py``, and run ``./manage.py makemigrations`` and ``./manage.py migrate``.
-7. Run the server! ``./manage.py runserver 8080``.
+3. Make `setup.sh` executable, ``chmod +x ./setup.sh``.
+4. Set up the container with ``./setup.sh``.
 
-Your development server should now be running on port 8080.
+Your development server should now be running on port 8000.
 
 Deployment Instructions
 =======================
