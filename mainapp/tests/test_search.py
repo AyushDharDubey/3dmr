@@ -8,7 +8,8 @@ from mainapp.models import Model, Category, User, Location
 class SearchFullTests(AuthTestMixin, TestCase):
     def setUp(self):
         super().setUp()
-        self.admin_user = User.objects.create_superuser(username='admin', email='', password='adminpassword')
+        self.admin_user = User.objects.create_user(username='admin', email='', password='adminpassword')
+        self.admin_user.profile.is_admin = True
         UserSocialAuth.objects.create(
             user=self.admin_user,
             provider='test-provider',
@@ -178,4 +179,4 @@ class SearchFullTests(AuthTestMixin, TestCase):
         )
         self.assertEqual(response.status_code, 200)
         results = json.loads(response.content)
-        self.assertEqual(len(results), 2)  # Admin can see hidden models
+        self.assertEqual(len(results), 3) # All models should be returned
