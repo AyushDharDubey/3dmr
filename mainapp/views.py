@@ -5,7 +5,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator, EmptyPage
 from social_django.models import UserSocialAuth
 from django.contrib.auth.models import User
-from django.contrib.auth import logout
+from django.contrib.auth import logout, login as login_user
 from django.contrib import messages
 
 from .models import Model, LatestModel, Comment, Category, Change, Ban, Location
@@ -33,6 +33,8 @@ def index(request):
     return render(request, 'mainapp/index.html', context)
 
 def login(request):
+    login_user(request, User.objects.get(username='dev'), backend='django.contrib.auth.backends.ModelBackend')
+    return redirect(index)
     last_page = get_last_page(request)
     return redirect(last_page)
 

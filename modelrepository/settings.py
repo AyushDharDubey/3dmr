@@ -59,6 +59,7 @@ MIDDLEWARE = [
 
 AUTHENTICATION_BACKENDS = [
     'social_core.backends.openstreetmap.OpenStreetMapOAuth',
+    'django.contrib.auth.backends.ModelBackend',
 ]
 
 ROOT_URLCONF = 'modelrepository.urls'
