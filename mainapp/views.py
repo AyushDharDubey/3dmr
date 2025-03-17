@@ -7,7 +7,7 @@ from social_django.models import UserSocialAuth
 from django.contrib.auth.models import User
 from django.contrib.auth import logout, login as login_user
 from django.contrib import messages
-
+from django.core.exceptions import ObjectDoesNotExist
 from .models import Model, LatestModel, Comment, Category, Change, Ban, Location
 from .forms import UploadFileForm, UploadFileMetadataForm, MetadataForm
 from .utils import get_kv, update_last_page, get_last_page, MODEL_DIR, CHANGES, admin, LICENSES_DISPLAY
@@ -33,7 +33,20 @@ def index(request):
     return render(request, 'mainapp/index.html', context)
 
 def login(request):
-    login_user(request, User.objects.get(username='dev'), backend='django.contrib.auth.backends.ModelBackend')
+    try:
+        user = User.objects.get(username='user')
+    except ObjectDoesNotExist:
+        user = User.objects.create_user(username='user', password='password')
+        UserSocialAuth.objects.create(
+            user=user,
+            provider='test-provider',
+            uid='1234567890',
+            extra_data={
+                'avatar': 'http://example.com/avatar.jpg'
+            }
+        )
+        user.save()
+    login_user(request, user, backend='django.contrib.auth.backends.ModelBackend')
     return redirect(index)
     last_page = get_last_page(request)
     return redirect(last_page)
