@@ -1,6 +1,6 @@
 services:
   web:
-    image: python:3.6
+    build: .
     container_name: 3dmr_web
     working_dir: /app
     volumes:
