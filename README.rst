@@ -5,7 +5,7 @@ This is a repository for 3D models and their metadata, for use by the community 
 
 Project History
 ======================
-This project was originally developed as part of Google Summer of Code 2017 by Pedro Amaro, under the mentorship of the OpenStreetMap community with Jan Marsch and Tobias Knerr as mentors. The project was aimed at creating a repository for 3D models and their metadata, for use by the community for improving the quality of 3D rendering of maps.
+This project was [originally developed](https://gitlab.com/n42k/3dmr) as part of Google Summer of Code 2017 by Pedro Amaro, under the mentorship of the OpenStreetMap community with Jan Marsch and Tobias Knerr as mentors. The project was aimed at creating a repository for 3D models and their metadata, for use by the community for improving the quality of 3D rendering of maps.
 
 Development Server Instructions
 ===============================
