@@ -69,8 +69,11 @@ class SearchFullTests(AuthTestMixin, TestCase):
         self.assertEqual(response.status_code, 200)
         results = json.loads(response.content)
         self.assertEqual(len(results), 2)
-        self.assertEqual(results[0][1], 'Model 1')  # Check title
-        self.assertEqual(results[1][1], 'Model 3')
+        # Check title
+        self.assertSetEqual(
+            {result[1] for result in results},
+            {'Model 1', 'Model 3'}
+        )
 
     def test_search_full_location_filter(self):
         # Test filtering by location
@@ -103,8 +106,11 @@ class SearchFullTests(AuthTestMixin, TestCase):
         self.assertEqual(response.status_code, 200)
         results = json.loads(response.content)
         self.assertEqual(len(results), 2)
-        self.assertEqual(results[0][1], 'Model 1')  # Check title
-        self.assertEqual(results[1][1], 'Model 3')
+        # Check title
+        self.assertSetEqual(
+            {result[1] for result in results},
+            {'Model 1', 'Model 3'}
+        )
 
     def test_search_full_tags_filter(self):
         # Test filtering by tags

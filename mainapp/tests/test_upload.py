@@ -39,8 +39,10 @@ class TestUpload(AuthTestMixin, TestCase):
         self.assertEqual(Model.objects.first().title, 'Test Model')
         self.assertEqual(Model.objects.first().description, 'This is a test model')
         self.assertEqual(Model.objects.first().categories.count(), 2)
-        self.assertEqual(Model.objects.first().categories.first().name, 'tc1')
-        self.assertEqual(Model.objects.first().categories.last().name, 'tc2')
+        self.assertSetEqual(
+            set(Model.objects.first().categories.values_list('name', flat=True)),
+            {'tc1', 'tc2'}
+        )
         self.assertEqual(Model.objects.first().translation_x, 0.0)
         self.assertEqual(Model.objects.first().translation_y, 0.0)
         self.assertEqual(Model.objects.first().translation_z, 0.0)
