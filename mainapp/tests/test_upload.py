@@ -8,10 +8,12 @@ import os
 
 
 class TestUpload(AuthTestMixin, TestCase):
-    def test_upload(self):
+    def test_upload_get(self):
         response = self.client.get(reverse('upload'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Upload Model')
+
+    def test_upload_post(self):
         with open('mainapp/tests/models/test_model.zip', 'rb') as f:
             file_content = f.read()
 
