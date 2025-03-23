@@ -1,15 +1,20 @@
+import logging
+
 from django.apps import AppConfig
 from django.db.models.signals import pre_migrate
 from django.db import connection
 
+logger = logging.getLogger(__name__)
+
 def enable_hstore(sender, **kwargs):
-    print("Enabling hstore extension...")
+    logger.info("Enabling hstore extension...")
     with connection.cursor() as cursor:
         try:
             cursor.execute("CREATE EXTENSION IF NOT EXISTS hstore;")
-            print("hstore extension enabled.")
+            logger.info("hstore extension enabled successfully.")
         except Exception as e:
-            print("Failed to enable hstore extension:", e)
+            logging.error("Failed to enable hstore extension.", exc_info=True)
+            raise RuntimeError("hstore installation failed.") from e
 
 class MainappConfig(AppConfig):
     name = 'mainapp'
