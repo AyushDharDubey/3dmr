@@ -146,3 +146,5 @@ STATICFILES_FINDERS = (
         'django.contrib.staticfiles.finders.AppDirectoriesFinder',
         'compressor.finders.CompressorFinder',
 )
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
