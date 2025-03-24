@@ -23,7 +23,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '&$)1o$zbwi&y=qu)fb@1o_@p&bzjtnq3f2!gz*h+xex=(e@_&_'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = []
 
@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.postgres',
+    'django.contrib.admin',
     'mainapp',
     'social_django',
     'django_pgviews',
@@ -44,8 +45,8 @@ INSTALLED_APPS = [
 ]
 
 SOCIAL_AUTH_URL_NAMESPACE = 'social'
-SOCIAL_AUTH_OPENSTREETMAP_KEY = 'VTwxvHwg0aeX6x30D1U9SK3JaQKcm8THrtJVsY9R'
-SOCIAL_AUTH_OPENSTREETMAP_SECRET = '3QYDebgolnTGAWLn51nZUxynI0D0osmvUaBZsTYh'
+SOCIAL_AUTH_OPENSTREETMAP_OAUTH2_KEY = os.environ.get('OSM_CLIENT_ID')
+SOCIAL_AUTH_OPENSTREETMAP_OAUTH2_SECRET = os.environ.get('OSM_CLIENT_SECRET')
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -59,6 +60,7 @@ MIDDLEWARE = [
 
 AUTHENTICATION_BACKENDS = [
     'social_core.backends.openstreetmap.OpenStreetMapOAuth',
+    'django.contrib.auth.backends.ModelBackend',
 ]
 
 ROOT_URLCONF = 'modelrepository.urls'
@@ -91,11 +93,11 @@ WSGI_APPLICATION = 'modelrepository.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': '3dmr',
-        'USER': '3dmr',
-        'PASSWORD': '123123',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
+        'NAME': os.environ.get('POSTGRES_DB', '3dmr'),
+        'USER': os.environ.get('POSTGRES_USER', '3dmr'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'postgres'),
+        'HOST': os.environ.get('POSTGRES_HOST', 'localhost'),
+        'PORT': os.environ.get('POSTGRES_PORT', '5432'),
     }
 }
 
