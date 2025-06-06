@@ -140,12 +140,13 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = 'static/'
-
-STATIC_ROOT = '/home/tdmr/static/'
+STATIC_ROOT = os.environ.get("STATIC_ROOT", BASE_DIR / "staticfiles")
 
 STATICFILES_FINDERS = (
         'django.contrib.staticfiles.finders.AppDirectoriesFinder',
         'compressor.finders.CompressorFinder',
 )
+
+MODEL_DIR = os.environ.get('MODEL_DIR', BASE_DIR / "models")
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
