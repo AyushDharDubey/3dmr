@@ -87,9 +87,9 @@ def get_model(request, model_id, revision=None):
         raise Http404('Model does not exist.')
 
 
-    response = FileResponse(open('{}/{}/{}.zip'.format(MODEL_DIR, model_id, revision), 'rb'))
-    response['Content-Disposition'] = 'attachment; filename={}.zip'.format(revision)
-    response['Content-Type'] = 'application/zip'
+    response = FileResponse(open('{}/{}/{}.glb'.format(MODEL_DIR, model_id, revision), 'rb'))
+    response['Content-Disposition'] = 'attachment; filename={}.glb'.format(revision)
+    response['Content-Type'] = 'model/gltf-binary'
     response['Cache-Control'] = 'public, max-age=86400'
     return response
 
