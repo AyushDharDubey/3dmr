@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.postgres',
     'mainapp',
     'social_django',
-    'compressor',
+    'pipeline',
 ]
 
 SOCIAL_AUTH_URL_NAMESPACE = 'social'
@@ -144,9 +144,33 @@ STATIC_URL = 'static/'
 STATIC_ROOT = os.environ.get("STATIC_ROOT", BASE_DIR / "staticfiles")
 
 STATICFILES_FINDERS = (
+        'django.contrib.staticfiles.finders.FileSystemFinder',
         'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-        'compressor.finders.CompressorFinder',
+        'pipeline.finders.PipelineFinder',
 )
+
+STATICFILES_STORAGE = 'pipeline.storage.PipelineStorage'
+
+PIPELINE = {
+    'PIPELINE_ENABLED': True,
+    'JAVASCRIPT': {
+        'main': {
+            'source_filenames': (
+                'mainapp/*.js',
+            ),
+            'output_filename': 'mainapp/main.min.js',
+        },
+    },
+
+    'STYLESHEETS': {
+        'main': {
+            'source_filenames': (
+                'mainapp/*.css',
+            ),
+            'output_filename': 'mainapp/main.min.css',
+        },
+    },
+}
 
 MODEL_DIR = os.environ.get('MODEL_DIR', BASE_DIR / "models")
 
