@@ -114,13 +114,11 @@ function enableEdit() {
 </div>
 {% endblock %}
 {% block footeradditions %}
-{% load compress %}
-{% compress js %}
-<script type="module" src="{% static 'mainapp/preview.js' %}"></script>
+{% load pipeline %}
+{% javascript 'main' %}
 <script>
 	window.addEventListener("load", function() {
 		setUpRenderPane();
 	});
 </script>
-{% endcompress %}
 {% endblock %}
