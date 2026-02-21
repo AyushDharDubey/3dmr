@@ -3,7 +3,7 @@ name: test
 on: [push, pull_request]
 
 jobs:
-  test:
+  test-ubuntu:
     runs-on: ubuntu-latest
 
     env:
@@ -73,3 +73,73 @@ jobs:
     - name: Run tests
       run: |
         python manage.py test
+
+
+  test-windows:
+    runs-on: windows-latest
+
+    env:
+      POSTGRES_DB: 3dmr
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Start and configure PostgreSQL
+        run: |
+          $pgService = Get-Service -Name postgresql*
+          Set-Service -InputObject $pgService -Status running -StartupType automatic
+          Start-Service -InputObject $pgService
+          
+          # Create the database
+          & "$env:PGBIN\createdb" -U postgres $env:POSTGRES_DB
+
+          # Set password for the default postgres user
+          & "$env:PGBIN\psql" -U postgres -c "ALTER USER postgres PASSWORD '$env:POSTGRES_PASSWORD';"
+
+        shell: pwsh
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Build static files
+        run: |
+          cd mainapp/static_src
+          npm install
+          npm run build
+
+      - name: Download glTF Validator
+        run: |
+          curl -L -o gltf_validator.zip https://github.com/KhronosGroup/glTF-Validator/releases/download/2.0.0-dev.3.10/gltf_validator-2.0.0-dev.3.10-win64.zip
+          mkdir gltf_validator
+          Expand-Archive -Path gltf_validator.zip -DestinationPath gltf_validator
+        shell: pwsh
+
+      - name: Add validator to PATH
+        run: echo "${{ github.workspace }}\gltf_validator" >> $env:GITHUB_PATH
+        shell: pwsh
+
+      - name: Collect static files
+        run: python manage.py collectstatic --noinput
+
+      - name: Run migrations
+        run: |
+          python manage.py makemigrations
+          python manage.py migrate
+
+      - name: Run tests
+        run: python manage.py test
