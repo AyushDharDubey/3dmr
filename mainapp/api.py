@@ -221,10 +221,13 @@ def search_full(request):
     latitude = data.get('lat')
     longitude = data.get('lon')
     distance = data.get('range')
-    if latitude is not None and \
-       longitude is not None and \
-       distance is not None:
-        models = range_filter(models, latitude, longitude, distance)
+    if latitude is not None or longitude is not None or distance is not None:
+        if latitude is None or longitude is None or distance is None:
+            return HttpResponseBadRequest('Invalid range parameters')
+        try:
+            models = range_filter(models, float(latitude), float(longitude), float(distance))
+        except (ValueError, TypeError):
+            return HttpResponseBadRequest('Invalid range parameters')
 
     title = data.get('title')
     if title:
@@ -242,7 +245,10 @@ def search_full(request):
 
     models = models.order_by('model_id')
 
-    page_id = int(data.get('page', 1))
+    try:
+        page_id = int(data.get('page', 1))
+    except (ValueError, TypeError):
+        return HttpResponseBadRequest('Invalid page number')
 
     fmt = data.get('format')
 
@@ -263,25 +269,19 @@ def search_full(request):
             if string == 'id':
                 output.append(model.model_id)
             elif string == 'latitude':
-                try:
-                    output.append(model.location.latitude)
-                except:
-                    output.append(None)
+                output.append(model.location.latitude if model.location else None)
             elif string == 'longitude':
-                try:
-                    output.append(model.location.longitude)
-                except:
-                    output.append(None)
+                output.append(model.location.longitude if model.location else None)
             elif string == 'title':
                 output.append(model.title)
             else:
-                raise Exception()
+                raise ValueError()
 
         return output
 
     try:
         results = [result(model) for model in model_results]
-    except:
+    except ValueError:
         return HttpResponseBadRequest('Invalid format specifier')
 
     return JsonResponse(results, safe=False)

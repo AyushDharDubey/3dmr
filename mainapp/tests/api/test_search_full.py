@@ -34,8 +34,8 @@ class SearchFullAPIViewTest(BaseViewTestMixin, TestCase):
         )
         self.assertEqual(response.status_code, 200)
         results = json.loads(response.content)
-        self.assertEqual(len(results), 2)
-        self.assertSetEqual({result[1] for result in results}, {"Model 1", "Model 3"})
+        self.assertEqual(len(results), 3)
+        self.assertSetEqual({result[1] for result in results}, {"Model 1", "Model 3", "Model 4 No Loc"})
 
     def test_search_full_title_filter(self):
         payload = {"title": "Model", "format": ["id", "title"]}
@@ -46,8 +46,8 @@ class SearchFullAPIViewTest(BaseViewTestMixin, TestCase):
         )
         self.assertEqual(response.status_code, 200)
         results = json.loads(response.content)
-        self.assertEqual(len(results), 2)
-        self.assertSetEqual({result[1] for result in results}, {"Model 1", "Model 3"})
+        self.assertEqual(len(results), 3)
+        self.assertSetEqual({result[1] for result in results}, {"Model 1", "Model 3", "Model 4 No Loc"})
 
     def test_search_full_tags_filter(self):
         payload = {"tags": {"color": "red"}, "format": ["id", "title"]}
@@ -157,19 +157,8 @@ class SearchFullAPIViewTest(BaseViewTestMixin, TestCase):
         self.assertIn(self.model2.model_id, [r[0] for r in results])
 
     def test_search_full_with_format_no_location(self):
-        self.model_no_loc = Model.objects.create(
-            model_id=99,
-            revision=1,
-            title="Model No Loc",
-            author=self.user,
-            is_hidden=False,
-            location=None,
-            license=1,
-            latest=True,
-        )
-
         payload = {
-            "title": self.model_no_loc.title,
+            "title": self.model4.title,
             "format": ["id", "title", "latitude", "longitude"],
         }
         response = self.client.post(
@@ -181,8 +170,8 @@ class SearchFullAPIViewTest(BaseViewTestMixin, TestCase):
         data = response.json()
         self.assertTrue(len(data) > 0)
         first_result = data[0]
-        self.assertEqual(first_result[0], self.model_no_loc.model_id)
-        self.assertEqual(first_result[1], self.model_no_loc.title)
+        self.assertEqual(first_result[0], self.model4.model_id)
+        self.assertEqual(first_result[1], self.model4.title)
         self.assertIsNone(first_result[2])
         self.assertIsNone(first_result[3])
 
@@ -193,3 +182,49 @@ class SearchFullAPIViewTest(BaseViewTestMixin, TestCase):
             content_type="application/json"
         )
         self.assertEqual(response.status_code, 400)
+
+    def test_search_full_invalid_page_400(self):
+        payload = {"page": "invalid"}
+        response = self.client.post(
+            reverse("search_full"),
+            data=json.dumps(payload),
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.content.decode(), "Invalid page number")
+
+    def test_search_full_invalid_range_400(self):
+        payload = {"lat": "48.8", "lon": "2.3", "range": "invalid"}
+        response = self.client.post(
+            reverse("search_full"),
+            data=json.dumps(payload),
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.content.decode(), "Invalid range parameters")
+
+    def test_search_full_missing_range_subset_400(self):
+        payload = {"lat": 48.8, "lon": 2.3}
+        response = self.client.post(
+            reverse("search_full"),
+            data=json.dumps(payload),
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.content.decode(), "Invalid range parameters")
+
+    def test_search_full_location_filter_model_no_location(self):
+        payload = {
+            "lat": 48.8,
+            "lon": 2.3,
+            "range": 1000,
+            "format": ["id", "title"],
+        }
+        response = self.client.post(
+            reverse("search_full"),
+            data=json.dumps(payload),
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 200)
+        results = response.json()
+        self.assertNotIn(self.model4.model_id, [r[0] for r in results])

@@ -90,9 +90,23 @@ class BaseViewTestMixin(TestCase):
         self.cat3 = Category.objects.create(name="category3")
         self.model3.categories.set([self.cat3])
 
+        self.model4 = Model.objects.create(
+            model_id=4,
+            revision=1,
+            title="Model 4 No Loc",
+            author=self.user,
+            is_hidden=False,
+            location=None,
+            tags={"color": "white", "size": "medium"},
+            license=1,
+            latest=True,
+        )
+        self.cat4 = Category.objects.create(name="category4")
+        self.model4.categories.set([self.cat4])
+
         self.model_dirs = []
 
-        for model in [self.model1, self.model2, self.model3]:
+        for model in [self.model1, self.model2, self.model3, self.model4]:
             filepath = f"{settings.MODEL_DIR}/{model.model_id}/{model.revision}.glb"
             self.model_dirs.append(os.path.dirname(filepath))
             os.makedirs(os.path.dirname(filepath), exist_ok=True)
