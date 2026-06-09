@@ -216,7 +216,9 @@
         });
 
         const selectedRadio = document.querySelector('input[name="model_source"]:checked');
-        if (selectedRadio) {
+		if (selectedRadio == null) {
+			modelSource.style.display = 'none';
+		} else {
             toogle(selectedRadio.value);
         }
     });
