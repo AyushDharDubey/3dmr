@@ -82,10 +82,11 @@ function initMap(id, latitude, longitude, width, height) {
 
 	map.setView([latitude, longitude]);
 
-	L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+	L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
 		attribution: 'Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors',
 		minZoom: 3,
-		maxZoom: 18
+		maxZoom: 18,
+		referrerPolicy: "strict-origin-when-cross-origin"
 	}).addTo(map);
 
 	map.on("moveend", function() {
