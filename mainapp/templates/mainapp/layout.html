@@ -50,7 +50,12 @@
 					<li class="navbar-display-name"><a href="{% url 'user' uid=''%}"><img src="{{ user.profile.avatar }}" alt=""> {{ user.profile.display_name }}</a></li>
 					<!-- <li class="navbar-display-name navbar-short"><a href="{% url 'user' uid=''%}"><img src="{{ user.profile.avatar }}" alt=""></a></li> -->
 					{% else %}
-					<li><a href="{% url 'social:begin' 'openstreetmap-oauth2' %}">Login</a></li>
+					<li>
+						<form action="{% url 'social:begin' 'openstreetmap-oauth2' %}" method="POST">
+							{% csrf_token %}
+							<button type="submit" class="btn btn-link navbar-btn">Login</button>
+						</form>
+					</li>
 					{% endif %}
 				</ul>
 				<form class="navbar-form navbar-left" action="{% url 'search' %}" method="GET">
