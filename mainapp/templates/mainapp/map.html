@@ -9,6 +9,7 @@
 {% compress js %}
 <script src="{% static 'mainapp/lib/leaflet.js' %}"></script>
 {% endcompress %}
+<script>L.Icon.Default.imagePath = "{% static 'mainapp/lib/images/' %}";</script>
 <style>
 	html, body {
 		width: 100%;

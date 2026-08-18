@@ -5,6 +5,7 @@
 {% load django_vite %}
 <link rel="stylesheet" href="{% static 'mainapp/lib/leaflet.css' %}">
 <script src="{% static 'mainapp/lib/leaflet.js' %}"></script>
+<script>L.Icon.Default.imagePath = "{% static 'mainapp/lib/images/' %}";</script>
 <style>
 	#mapdiv {
 		width: 750px;
