@@ -58,7 +58,11 @@ class Location(models.Model):
     longitude = models.FloatField()
 
 class Model(models.Model):
+    # author is the original creator of the model and stays the same across
+    # revisions. uploader is whoever uploaded this particular revision, which
+    # may be the original author or an admin.
     author = models.ForeignKey(User, on_delete=models.CASCADE)
+    uploader = models.ForeignKey(User, null=True, on_delete=models.SET_NULL, related_name='uploaded_models')
     model_id = models.IntegerField()
     revision = models.IntegerField()
     title = models.CharField(max_length=32)

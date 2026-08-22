@@ -30,7 +30,7 @@ def upload(model_file, options={}):
                 m.pk = None
                 m.id = None
                 m.revision += 1
-                m.author = options['author']
+                m.uploader = options['author']
                 m.location = location
                 m.latest = True
                 m._state.adding = True
@@ -68,6 +68,7 @@ def upload(model_file, options={}):
                     location=location,
                     license=options['license'],
                     author=options['author'],
+                    uploader=options['author'],
                     source=options['source'],
                     latest=True
                 )
