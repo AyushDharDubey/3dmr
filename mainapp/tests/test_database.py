@@ -55,6 +55,7 @@ class DatabaseTests(TestCase):
         self.assertIsNotNone(created_model, "Model creation should not return None")
         self.assertEqual(created_model.title, options["title"])
         self.assertEqual(created_model.author, options["author"])
+        self.assertEqual(created_model.uploader, options["author"])
         self.assertEqual(
             created_model.rendered_description, markdown(options["description"])
         )
@@ -184,8 +185,13 @@ class DatabaseTests(TestCase):
         self.assertEqual(revised_model.revision, 2, "Revision number should increment")
         self.assertEqual(
             revised_model.author,
+            initial_user,
+            "Author should remain the original creator for the new revision",
+        )
+        self.assertEqual(
+            revised_model.uploader,
             revision_author,
-            "Author should be updated for the new revision",
+            "Uploader should be the user who uploaded the new revision",
         )
         self.assertEqual(revised_model.title, initial_model.title)
         self.assertEqual(revised_model.license, initial_model.license)
@@ -193,7 +199,8 @@ class DatabaseTests(TestCase):
         latest_model = Model.objects.get(model_id=initial_model.model_id, latest=True)
         self.assertEqual(latest_model.revision, 2)
         self.assertEqual(latest_model.title, initial_model.title)
-        self.assertEqual(latest_model.author, revision_author)
+        self.assertEqual(latest_model.author, initial_user)
+        self.assertEqual(latest_model.uploader, revision_author)
 
         change_record = Change.objects.get(model=revised_model)
         self.assertEqual(change_record.author, revision_author)

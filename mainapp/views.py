@@ -85,7 +85,7 @@ def model(request, model_id, revision=None):
         raise Http404('Model does not exist.')
 
     model.revisions = Model.objects.filter(model_id=model_id) \
-    .select_related('author__profile').order_by('-revision')
+    .select_related('uploader__profile').order_by('-revision')
 
     context = {
         'model': model,
@@ -244,8 +244,8 @@ def revise(request, model_id):
         if not request.user.is_authenticated:
             messages.error(request, 'You must be logged in to use this feature.')
             return redirect(index)
-        elif request.user != m.author:
-            messages.error(request, 'You must be the author of the model to revise it.')
+        elif request.user != m.author and not admin(request):
+            messages.error(request, 'You must be the author of the model or an admin user to revise it.')
             return redirect(model, model_id=m.model_id, revision=m.revision)
         elif form.is_valid():
             model_file = request.FILES['model_file']
@@ -264,8 +264,8 @@ def revise(request, model_id):
     else:
         if not request.user.is_authenticated:
             return redirect(index)
-        elif request.user != m.author:
-            messages.error(request, 'You must be the author of the model to revise it.')
+        elif request.user != m.author and not admin(request):
+            messages.error(request, 'You must be the author of the model or an admin user to revise it.')
             return redirect(model, model_id=m.model_id, revision=m.revision)
 
         form = UploadFileForm()

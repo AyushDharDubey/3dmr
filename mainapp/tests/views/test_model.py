@@ -338,6 +338,73 @@ class ReviseModelViewTest(BaseViewTestMixin, TestCase):
         self.assertIsInstance(response.context["form"], UploadFileForm)
         self.assertEqual(response.context["model"].pk, self.model3.pk)
 
+    def test_revise_view_get_admin_non_author(self):
+        self.login_user("admin")
+        response = self.client.get(
+            reverse("revise", args=[self.model3.model_id])
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "mainapp/revise.html")
+        self.assertEqual(response.context["model"].pk, self.model3.pk)
+
+    def test_revise_view_get_non_author_rejected(self):
+        self.login_user()
+        response = self.client.get(
+            reverse("revise", args=[self.model2.model_id])
+        )
+        self.assertRedirects(
+            response,
+            reverse("model", args=[self.model2.model_id, self.model2.revision]),
+            fetch_redirect_response=False,
+        )
+
+    @patch("mainapp.views.database.upload")
+    @patch("mainapp.forms.validate_glb_file")
+    def test_revise_view_post_admin_non_author(self, mock_validate, mock_db_upload):
+        mock_validate.return_value = []
+        mock_db_upload.return_value = Model(
+            model_id=self.model3.model_id, revision=2, author=self.user
+        )
+        self.login_user("admin")
+
+        dummy_file = SimpleUploadedFile(
+            "test_revision.glb", self.model_file, content_type="model/gltf-binary"
+        )
+
+        response = self.client.post(
+            reverse("revise", args=[self.model3.model_id]),
+            data={"model_file": dummy_file},
+        )
+
+        self.assertEqual(response.status_code, 302)
+        mock_db_upload.assert_called_once()
+        call_args = mock_db_upload.call_args[0]
+        self.assertEqual(int(call_args[1]["model_id"]), self.model3.model_id)
+        self.assertTrue(call_args[1]["revision"])
+        self.assertEqual(call_args[1]["author"], self.admin_user)
+
+    @patch("mainapp.views.database.upload")
+    @patch("mainapp.forms.validate_glb_file")
+    def test_revise_view_post_non_author_rejected(self, mock_validate, mock_db_upload):
+        mock_validate.return_value = []
+        self.login_user()
+
+        dummy_file = SimpleUploadedFile(
+            "test_revision.glb", self.model_file, content_type="model/gltf-binary"
+        )
+
+        response = self.client.post(
+            reverse("revise", args=[self.model2.model_id]),
+            data={"model_file": dummy_file},
+        )
+
+        self.assertRedirects(
+            response,
+            reverse("model", args=[self.model2.model_id, self.model2.revision]),
+            fetch_redirect_response=False,
+        )
+        mock_db_upload.assert_not_called()
+
     @patch("mainapp.views.database.upload")
     @patch("mainapp.forms.validate_glb_file")
     def test_revise_view_post_success(self, mock_validate, mock_db_upload):

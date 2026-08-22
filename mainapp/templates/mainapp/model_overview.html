@@ -17,7 +17,14 @@
 <p>Description:</p>
 <p>{{ model.rendered_description|safe }}</p>
 {% endif %}
-<p>Uploaded by <a href="{% url 'user' model.author.profile.uid %}"><span class="label label-default">{{ model.author.profile.display_name }}</span></a> on {{ model.upload_date|date:"c" }}</p>
+<p>Created by <a href="{% url 'user' model.author.profile.uid %}"><span class="label label-default">{{ model.author.profile.display_name }}</span></a></p>
+{% if model.revisions|length > 1 %}
+<p>This revision was uploaded
+    {% if model.uploader %}
+    by <a href="{% url 'user' model.uploader.profile.uid %}"><span class="label label-default">{{ model.uploader.profile.display_name }}</span></a>
+    {% endif %}
+    on {{ model.upload_date|date:"c" }}</p>
+{% endif %}
 {% if model.source %}
 <p>From: 
     {% if model.source_is_url %}
@@ -31,8 +38,6 @@
 <a href="{% url 'get_model' model.model_id model.revision %}" class="btn btn-default" role="button">Download</a>
 {% if user.is_authenticated and model.author == user or user.profile.is_admin %}
 <a href="{% url 'edit' model.model_id model.revision %}" class="btn btn-default" role="button">Edit Metadata</a>
-{% endif %}
-{% if user.is_authenticated and model.author == user %}
 <a href="{% url 'revise' model.model_id %}" class="btn btn-default" role="button">Revise</a>
 {% endif %}
 {% if user.is_authenticated and user.profile.is_admin %}
