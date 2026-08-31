@@ -1,4 +1,5 @@
 import logging
+from urllib.parse import urlencode
 
 from django.conf import settings
 from django.http import JsonResponse, Http404, HttpResponseBadRequest
@@ -9,6 +10,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import logout
 from django.contrib import messages
 from django.db import transaction
+from django.db.models import Q
 from .models import Model, Category, Change, Ban, Location
 from .forms import UploadFileForm, UploadFileMetadataForm, MetadataForm, UserDescriptionForm
 from .utils import get_kv, update_last_page, get_last_page, CHANGES, admin, LICENSES_DISPLAY
@@ -100,65 +102,90 @@ def search(request):
 
     RESULTS_PER_PAGE = 6
 
-    query = request.GET.get('query', None)
-    tag = request.GET.get('tag', None)
-    category = request.GET.get('category', None)
+    query = request.GET.get('query', '').strip()
+    tag = request.GET.get('tag', '').strip()
+    category = request.GET.get('category', '').strip()
     try:
         page_id = int(request.GET.get('page', 1))
     except ValueError:
         page_id = 1
 
-    url_params = '?'
-
+    # The active filters, in the order they are shown in the URL.
+    params = {}
     if query:
-        url_params += 'query=' + query
-    if tag:
-        url_params += 'tag=' + tag
+        params['query'] = query
     if category:
-        url_params += 'category=' + category
+        params['category'] = category
+    if tag:
+        params['tag'] = tag
 
-    models = Model.objects.filter(latest=True)
+    url_params = '?' + urlencode(params)
 
+    # Links that drop a single filter while keeping the others, used by the
+    # "active filters" list on the results page.
+    remove_links = {
+        name: '?' + urlencode({k: v for k, v in params.items() if k != name})
+        for name in params
+    }
+
+    is_admin = admin(request)
+
+    # All filters are applied cumulatively: a model must match every one of them.
+    filtered_models = Model.objects.filter(latest=True)
+    if not is_admin:
+        filtered_models = filtered_models.filter(is_hidden=False)
+
+    tag_error = None
+    if query:
+        filtered_models = filtered_models.filter(
+            Q(title__icontains=query) | Q(description__icontains=query))
+    if category:
+        filtered_models = filtered_models.filter(categories__name=category)
     if tag:
         try:
             key, value = get_kv(tag)
         except ValueError:
-            return redirect(index)
-        filtered_models = models.filter(tags__contains={key: value})
-    elif category:
-        filtered_models = models.filter(categories__name=category)
-    elif query:
-        filtered_models = \
-            models.filter(title__icontains=query) | \
-            models.filter(description__icontains=query)
+            key = ''
+        if not key:
+            tag_error = "Invalid tag '{}': tags must be written as key=value, for example building=yes.".format(tag)
+        else:
+            filtered_models = filtered_models.filter(tags__contains={key: value})
 
-    try:
-        if not admin(request):
-            filtered_models = filtered_models.filter(is_hidden=False)
-
-        ordered_models = filtered_models.order_by('-pk')
-    except UnboundLocalError:
-        # filtered_models isn't set, redirect to homepage
-        return redirect(index)
-
-    if not ordered_models:
+    if not params or tag_error:
+        # Nothing to search for (yet): just show the filter form.
         results = None
         paginator = None
     else:
-        paginator = Paginator(ordered_models, RESULTS_PER_PAGE)
-        try:
-            results = paginator.page(page_id)
-        except EmptyPage:
-            results = []
+        ordered_models = filtered_models.order_by('-pk')
+        if not ordered_models:
+            results = None
+            paginator = None
+        else:
+            paginator = Paginator(ordered_models, RESULTS_PER_PAGE)
+            try:
+                results = paginator.page(page_id)
+            except EmptyPage:
+                results = []
+
+    # Categories offered in the filter dropdown: those in use by a current
+    # revision of a model the user is allowed to see.
+    categories = Category.objects.filter(model__latest=True)
+    if not is_admin:
+        categories = categories.filter(model__is_hidden=False)
+    categories = list(categories.values_list('name', flat=True).distinct().order_by('name'))
 
     context = {
         'query': query,
         'tag': tag,
         'category': category,
+        'categories': categories,
+        'tag_error': tag_error,
+        'searched': bool(params) and not tag_error,
         'models': results,
         'paginator': paginator,
         'page_id': page_id,
-        'url_params': url_params
+        'url_params': url_params,
+        'remove_links': remove_links,
     }
 
     return render(request, 'mainapp/search.html', context)

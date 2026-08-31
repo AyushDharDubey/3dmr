@@ -1,5 +1,5 @@
 {% extends "mainapp/layout.html" %}
-{% block pagename %}Search Results{% endblock %}
+{% block pagename %}{% if searched %}Search Results{% else %}Search{% endif %}{% endblock %}
 {% load django_vite %}
 {% block headadditions %}
 <style>
@@ -15,19 +15,74 @@
 <div class="container">
 	<div class="col-12">
 		<div class="page-header">
-			<h1>Search Results
-			{% if query %}
-			<small>'{{ query }}'{% if tag or category %},{% endif %}</small>
-			{% endif %}
-			{% if category %}
-			<small>category '{{ category }}'{% if tag %},{% endif %}</small>
-			{% endif %}
-			{% if tag %}
-			<small>tag '{{ tag }}'</small>
-			{% endif %}
-			</h1>
+			<h1>{% if searched %}Search Results{% else %}Search Models{% endif %}</h1>
 		</div>
 	</div>
+
+	<div class="row">
+		<div class="col-md-8">
+			<form action="{% url 'search' %}" method="GET" class="form-horizontal" id="search-filters">
+				<div class="form-group">
+					<label for="filter-query" class="col-sm-2 control-label">Text</label>
+					<div class="col-sm-10">
+						<input type="text" class="form-control" id="filter-query" name="query" value="{{ query }}" placeholder="Words in the title or description, e.g. tower">
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="filter-category" class="col-sm-2 control-label">Category</label>
+					<div class="col-sm-10">
+						<select class="form-control" id="filter-category" name="category">
+							<option value="">Any category</option>
+							{% for name in categories %}
+							<option value="{{ name }}"{% if name == category %} selected{% endif %}>{{ name }}</option>
+							{% endfor %}
+							{% if category and category not in categories %}
+							<option value="{{ category }}" selected>{{ category }}</option>
+							{% endif %}
+						</select>
+					</div>
+				</div>
+				<div class="form-group{% if tag_error %} has-error{% endif %}">
+					<label for="filter-tag" class="col-sm-2 control-label">Tag</label>
+					<div class="col-sm-10">
+						<input type="text" class="form-control" id="filter-tag" name="tag" value="{{ tag }}" placeholder="key=value, e.g. building=yes">
+						{% if tag_error %}<span class="help-block">{{ tag_error }}</span>{% endif %}
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="col-sm-offset-2 col-sm-10">
+						<button type="submit" class="btn btn-primary">Search</button>
+						<a href="{% url 'search' %}" class="btn btn-default">Clear</a>
+						<a data-toggle="collapse" href="#search-help" class="btn btn-link" aria-expanded="{% if searched %}false{% else %}true{% endif %}" aria-controls="search-help">How does searching work?</a>
+					</div>
+				</div>
+			</form>
+		</div>
+		<div class="col-md-4">
+			<div id="search-help" class="collapse{% if not searched %} in{% endif %}">
+				<div class="panel panel-default">
+					<div class="panel-heading">How does searching work?</div>
+					<div class="panel-body">
+						<ul>
+							<li><b>Text</b> finds models whose title or description contains the words you entered (case-insensitive).</li>
+							<li><b>Category</b> restricts results to models the uploader filed under that category. The list shows every category currently in use.</li>
+							<li><b>Tag</b> restricts results to models tagged with an exact OpenStreetMap-style <code>key=value</code> pair, for example <code>building=yes</code> or <code>man_made=tower</code>. Only the first <code>=</code> separates the key from the value.</li>
+							<li>Filters combine: a model is listed only if it matches <em>all</em> of them.</li>
+							<li>Searches are plain links you can bookmark or share, e.g. <code>/search?query=tower&amp;category=building&amp;tag=man_made=tower</code>.</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	{% if searched %}
+	<p>
+		Showing models
+		{% if query %}matching <a href="{% url 'search' %}{{ remove_links.query }}" class="label label-default" title="Remove this filter">'{{ query }}' &times;</a>{% endif %}
+		{% if category %}in category <a href="{% url 'search' %}{{ remove_links.category }}" class="label label-default" title="Remove this filter">{{ category }} &times;</a>{% endif %}
+		{% if tag %}with tag <a href="{% url 'search' %}{{ remove_links.tag }}" class="label label-default" title="Remove this filter">{{ tag }} &times;</a>{% endif %}
+	</p>
 	{% if models %}
 	<div class="row flex">
 		{% for model in models %}
@@ -49,6 +104,7 @@
 	</div>
 	{% else %}
 	<p>No models were found with those parameters.</p>
+	{% endif %}
 	{% endif %}
 </div>
 {% endblock %}

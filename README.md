@@ -9,6 +9,25 @@ The deployed version of the project can be experienced at [3dmr](https://3dmr.eu
 - [Local Development Setup](docs/development.md)
 - [Deployment and Operations](docs/deployment.md)
 
+## Searching for models
+
+The search box in the navigation bar matches words in a model's title or description.
+The [search page](https://3dmr.eu/search) (the "Filters" link next to the search box) offers two more filters:
+
+| Filter     | URL parameter        | Matches                                                                                                                                              |
+| ---------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Text       | `query=<words>`      | Models whose title or description contains the words (case-insensitive).                                                                             |
+| Category   | `category=<name>`    | Models filed under that category by their uploader. The search page lists every category currently in use.                                            |
+| Tag        | `tag=<key>=<value>`  | Models carrying that exact OpenStreetMap-style tag, e.g. `building=yes` or `man_made=tower`. Only the first `=` separates the key from the value.      |
+
+Filters combine: a model is listed only if it matches all of them. Searches are plain `GET` links that can be bookmarked or shared, for example:
+
+```
+https://3dmr.eu/search?query=tower&category=building&tag=man_made=tower
+```
+
+Clicking a category or tag label on a model's page runs the corresponding search.
+
 ## Contributing
 
 Please see [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines and a codebase overview.

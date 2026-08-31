@@ -60,6 +60,7 @@
 				</ul>
 				<form class="navbar-form navbar-left" action="{% url 'search' %}" method="GET">
 					<input type="text" class="form-control" id="search" placeholder="Search..." title="Search" name="query" {% if query %}value="{{ query }}"{% endif %}>
+					<a href="{% url 'search' %}" class="btn btn-link navbar-btn" title="Search by category or tag">Filters</a>
 				</form>
 			</div>
 		</div>
